@@ -1,10 +1,19 @@
 const express = require('express');
 const fetch = require('node-fetch');
+const cors = require('cors');
+
 const app = express();
 
-app.use(express.json());
-
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGwRMVtQyksOJBUeeaA6zhUvhSd5reOTdivoS8FSwvL_d-j4Iyj4zZDQrmY88EkfEpzQ/exec';
+
+// Use CORS middleware to automatically set proper headers before routes
+app.use(cors({
+  origin: 'https://nakuru-ccno.github.io',  // allow only your frontend origin
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+}));
+
+app.use(express.json({ limit: '10mb' })); // support large payloads if needed
 
 app.post('/upload-evidence', async (req, res) => {
   try {
@@ -16,21 +25,11 @@ app.post('/upload-evidence', async (req, res) => {
 
     const data = await response.json();
 
-    res.set('Access-Control-Allow-Origin', '*'); 
-    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-
+    // Just send the data back — CORS headers are handled by middleware
     res.json(data);
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
-});
-
-app.options('/upload-evidence', (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(204);
 });
 
 const PORT = process.env.PORT || 3000;
