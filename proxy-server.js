@@ -4,41 +4,26 @@ const cors = require('cors');
 
 const app = express();
 
-// Your Apps Script URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytUmS694cVGEYG89lMy-8ORyh7Wf2JwXasVQgHky13R0fUnmGNrGzHovbf6ioiacSouw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwnZS-ciGtFTXcwbSw1VY3doeBSkX30XDGVEeDQsjNlfy9jx0Paxn_m2nxWLyMq4AORw/exec';
 
-// ✅ Allow CORS for your frontend
+// Use CORS middleware to allow requests only from your frontend origin
 app.use(cors({
   origin: 'https://nakuru-ccno.github.io',
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
-  credentials: true
 }));
 
-// ✅ Respond to preflight OPTIONS requests
-app.options('*', cors({
-  origin: 'https://nakuru-ccno.github.io',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
-}));
+app.use(express.json({ limit: '10mb' })); // support large payloads
 
-app.use(express.json({ limit: '10mb' }));
-
-// Main route to upload evidence
 app.post('/upload-evidence', async (req, res) => {
-  const { subCounty } = req.body;
-
-  // ✅ Enforce subCounty is present
-  if (!subCounty || subCounty.trim() === '') {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Sub County is required before uploading.'
-    });
-  }
-
   try {
-    // Forward to Apps Script
+    const { subCounty } = req.body;
+
+    if (!subCounty || subCounty.trim() === '') {
+      return res.status(400).json({ success: false, message: 'subCounty is required' });
+    }
+
+    // Forward the request to the Apps Script Web App
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,12 +31,15 @@ app.post('/upload-evidence', async (req, res) => {
     });
 
     const data = await response.json();
-    res.json(data);
 
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Proxy server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Proxy server running on port ${PORT}`);
+});
+
