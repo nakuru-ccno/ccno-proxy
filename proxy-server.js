@@ -9,7 +9,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMex9rlVYM9AHi
 
 // Use CORS middleware to allow requests only from your frontend origin
 app.use(cors({
-  origin: 'https://nakuru-ccno.github.io',
+  origin: 'https://pc.nakurucountychiefnursingofficer.site',
   methods: ['POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));
