@@ -1,35 +1,57 @@
-import express from "express";
-import fetch from "node-fetch";
-import bodyParser from "body-parser";
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
 
 const app = express();
-app.use(bodyParser.json({ limit: '50mb' }));
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytUmS694cVGEYG89lMy-8ORyh7Wf2JwXasVQgHky13R0fUnmGNrGzHovbf6ioiacSouw/exec"; // Replace
+// Your Apps Script URL
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytUmS694cVGEYG89lMy-8ORyh7Wf2JwXasVQgHky13R0fUnmGNrGzHovbf6ioiacSouw/exec';
 
-app.post("/upload", async (req, res) => {
-  const { subCounty, fileName, fileData } = req.body;
+// ✅ Allow CORS for your frontend
+app.use(cors({
+  origin: 'https://nakuru-ccno.github.io',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
+}));
 
-  // ✅ Block if subCounty missing or blank
-  if (!subCounty || subCounty.trim() === "") {
+// ✅ Respond to preflight OPTIONS requests
+app.options('*', cors({
+  origin: 'https://nakuru-ccno.github.io',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+
+// Main route to upload evidence
+app.post('/upload-evidence', async (req, res) => {
+  const { subCounty } = req.body;
+
+  // ✅ Enforce subCounty is present
+  if (!subCounty || subCounty.trim() === '') {
     return res.status(400).json({
-      status: "error",
-      message: "Sub County is required before uploading."
+      status: 'error',
+      message: 'Sub County is required before uploading.'
     });
   }
 
   try {
+    // Forward to Apps Script
     const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
     });
 
     const data = await response.json();
-    res.status(response.status).json(data);
+    res.json(data);
+
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
-app.listen(3000, () => console.log("Proxy running on port 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Proxy server running on port ${PORT}`));
