@@ -14,7 +14,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
-app.use(express.json({ limit: '10mb' })); // support large payloads
+app.use(express.json({ limit: '20mb' })); // support large payloads
 
 app.post('/upload-evidence', async (req, res) => {
   try {
