@@ -7,7 +7,7 @@ const FormData = require("form-data");
 const app = express();
 const upload = multer(); // memory storage
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuFeDbGv4kBZzxHOjaAnxl_ey6DtbZr3gwBc0iE1wdX49Y2f2JFxeZnFdS886cusnyeQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzExydbqCiEGu_jSfLpBC7YR9kPZH7sCcWxYv2CIg5Ixn4dWAdH9zSX87PiwXfSX_jaXA/exec";
 
 app.use(cors({
   origin: "*",
