@@ -1,38 +1,43 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const cors = require('cors');
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
+const multer = require("multer");
+const FormData = require("form-data");
 
 const app = express();
+const upload = multer(); // memory storage
 
-// UPDATED Apps Script Web App URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuFeDbGv4kBZzxHOjaAnxl_ey6DtbZr3gwBc0iE1wdX49Y2f2JFxeZnFdS886cusnyeQ/exec';
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuFeDbGv4kBZzxHOjaAnxl_ey6DtbZr3gwBc0iE1wdX49Y2f2JFxeZnFdS886cusnyeQ/exec";
 
-// Use CORS middleware to allow requests only from your frontend origin
 app.use(cors({
-  origin: '*',
-  methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+  origin: "*",
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
 }));
 
-app.use(express.json({ limit: '20mb' })); // support large payloads
-
-app.post('/upload-evidence', async (req, res) => {
+// Accept multiple files
+app.post("/upload-evidence", upload.any(), async (req, res) => {
   try {
-    const { subCounty } = req.body;
-
-    if (!subCounty || subCounty.trim() === '') {
-      return res.status(400).json({ success: false, message: 'subCounty is required' });
+    if (!req.body.subCounty) {
+      return res.status(400).json({ success: false, message: "subCounty is required" });
     }
 
-    // Forward the request to the Apps Script Web App
+    // Forward as FormData to Apps Script
+    const formData = new FormData();
+    formData.append("evidenceName", req.body.evidenceName);
+    formData.append("category", req.body.category);
+    formData.append("subCounty", req.body.subCounty);
+
+    req.files.forEach((file, i) => {
+      formData.append("file" + i, file.buffer, file.originalname);
+    });
+
     const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
+      method: "POST",
+      body: formData,
     });
 
     const data = await response.json();
-
     res.json(data);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -40,6 +45,4 @@ app.post('/upload-evidence', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Proxy server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
