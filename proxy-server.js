@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 
 // UPDATED Apps Script Web App URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwv0jW6xF5lebEky1efxNslLc_lvAUTW3vBZ4WRZ2J_xGRbMjiv17PTiFSuDteyCzqBUQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuFeDbGv4kBZzxHOjaAnxl_ey6DtbZr3gwBc0iE1wdX49Y2f2JFxeZnFdS886cusnyeQ/exec';
 
 // Use CORS middleware to allow requests only from your frontend origin
 app.use(cors({
